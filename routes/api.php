@@ -65,5 +65,5 @@ Route::group(['middleware' => ['jwt.auth']], function() {
     Route::put('user', 'API\UsersController@putUpdateUser');
 });
 
-Route::apiResource('places', 'BookController');
+Route::apiResource('places', 'API\PlaceController');
 Route::post('places/{place}/ratings', 'RatingController@store');

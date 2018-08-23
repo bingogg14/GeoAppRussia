@@ -6,6 +6,7 @@ use App\Http\Resources\PlaceResource;
 use App\Models\Place;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Validator;
 
 class PlaceController extends Controller
 {
@@ -33,18 +34,14 @@ class PlaceController extends Controller
      */
     public function store(Request $request)
     {
-        //
-        $place = Place::create([
-            'user_id'         => $request->user()->id,
-            'title'           => $request->title,
-            'description'     => $request->description,
-            'image'           => $request->image,
-            'geo_search'      => $request->geo_search,
-            'geo_dot'         => $request->geo_dot,
-            'places_types_id' => $request->places_types_id,
-        ]);
-
-        return new PlaceResource($place);
+        $validation = self::required($request);
+        if ($validation->fails()) {
+            return response()->json(['success'=> false, 'error'=> $validation->messages()]);
+        } else {
+            $place = new Place();
+            $place = self::fields($place, $request);
+            return new PlaceResource($place);
+        }
     }
 
     /**
@@ -72,18 +69,14 @@ class PlaceController extends Controller
             return response()->json(['error' => 'You can only edit your own books.'], 403);
         }
 
-        $place->update($request->only(
-            [
-                'title',
-                'description',
-                'image',
-                'geo_search',
-                'geo_dot',
-                'places_types_id'
-            ])
-        );
+        $validation = self::required($request);
+        if ($validation->fails()) {
+            return response()->json(['success'=> false, 'error'=> $validation->messages()]);
+        } else {
+            $place = self::fields($place, $request);
+            return new PlaceResource($place);
+        }
 
-        return new PlaceResource($place);
     }
 
     /**
@@ -96,7 +89,32 @@ class PlaceController extends Controller
     {
         //
         $place->delete();
-
         return response()->json(null, 204);
+    }
+
+    //Filling Model
+    public function fields($object, Request $request) {
+        $data                       = $request->all();
+        $object->user_id            = $request->user()->id;
+        $object->title              = $data['title'];
+        $object->description        = $data['description'];
+        $object->image              = $data['image'];
+        $object->geo_search         = $data['geo_search'];
+        $object->geo_dot            = $data['geo_dot'];
+        $object->places_types_id    = $data['places_types_id'];
+        $object->save();
+        return $object;
+    }
+    //Validate Form
+    public function required(Request $request) {
+        $rules = array(
+            'title'                    => 'required|string|min:3|max:255',
+            'description'              => "required|string|min:3|max:255",
+            'image'                    => "required|string|min:3|max:255",
+            'geo_search'               => "required|string|min:3|max:255",
+            'geo_dot'                  => "required|string|min:3|max:255",
+            'places_types_id'          => "required|exists:places_types,id",
+        );
+        return  $validator = Validator::make($request->all(), $rules);
     }
 }

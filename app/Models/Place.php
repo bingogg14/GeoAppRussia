@@ -15,8 +15,12 @@ class Place extends Model
         'image',
         'geo_search',
         'geo_dot',
-        'type_place_id',
+        'places_types_id',
     ];
+
+//    protected $attributes = [
+//        'places_type'
+//    ];
 
     public function user()
     {
@@ -27,4 +31,9 @@ class Place extends Model
     {
         return $this->hasMany(Rating::class);
     }
+
+//    //Atributes
+//    public function getPlacesTypeAttribute() {
+//        return $this->hasOne('places_types', 'id', 'places_types_id');
+//    }
 }
